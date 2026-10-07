@@ -2,7 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="preconnect" href="https://i.imgur.com">
+<link rel="preload" as="image" href="https://i.imgur.com/N5gYJfw.jpeg" fetchpriority="high">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#001a0d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icons/app-192.png">
 <title>CyTech — Cybersecurity Desktop OS</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -97,7 +104,7 @@ a:hover { text-decoration: underline; text-shadow: 0 0 6px #00ffe1; }
   position: absolute; left: 0; right: 0; height: 120px;
   background: linear-gradient(180deg, transparent, rgba(0,255,156,0.07), transparent);
   pointer-events: none;
-  animation: scan 6s linear infinite;
+  animation: scan 3s linear infinite;
   z-index: 2;
 }
 @keyframes scan { 0% { top: -120px; } 100% { top: 100%; } }
@@ -466,7 +473,7 @@ function drawMatrix() {
     drops[i] += 14;
   }
 }
-let mxInterval = setInterval(drawMatrix, 50);
+let mxInterval = setInterval(drawMatrix, 33);
 
 /* ====================================================
    2. Boot log animation
@@ -503,11 +510,14 @@ function bootStep() {
   bootLog.scrollTop = bootLog.scrollHeight;
   bootIdx++;
   bootBar.style.width = (bootIdx / bootLines.length * 100) + "%";
-  setTimeout(bootStep, 180 + Math.random()*160);
+  setTimeout(bootStep, 100 + Math.random()*80);
 }
 setTimeout(bootStep, 400);
 
+let bootFinished = false;
 function finishBoot() {
+  if (bootFinished) return;
+  bootFinished = true;
   const boot = document.getElementById('boot');
   boot.style.transition = "opacity .6s";
   boot.style.opacity = "0";
@@ -560,15 +570,11 @@ APPS.forEach(app => {
   div.className = 'icon';
   div.dataset.app = app.id;
   div.innerHTML = `<div class="ic-img">${app.icon}</div><div class="ic-label">${app.label}</div>`;
-  // open on dblclick or tap
-  let lastTap = 0;
-  div.addEventListener('click', e => {
-    const now = Date.now();
-    if (now - lastTap < 400) { openApp(app.id); }
-    lastTap = now;
-    // also support single click to open (more mobile friendly)
-    setTimeout(()=>{ if (Date.now() - lastTap >= 380) openApp(app.id); }, 400);
-  });
+  div.tabIndex = 0;
+  div.setAttribute('role','button');
+  div.setAttribute('aria-label',app.label);
+  div.addEventListener('click',()=>openApp(app.id));
+  div.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openApp(app.id);}});
   iconsEl.appendChild(div);
 });
 
@@ -1966,7 +1972,7 @@ function updateMonitor() {
   document.getElementById('utc-time').textContent = utc;
   const tcl = now.toLocaleTimeString();
   document.getElementById('tb-clock').textContent = tcl;
-  document.getElementById('tray-clock').textContent = tcl.slice(0,5);
+  document.getElementById('tray-clock').textContent = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
 
   // Update monitor app (if open)
   if (openWindows['monitor']) refreshMonApp();
@@ -2041,7 +2047,7 @@ function refreshMonApp() {
 }
 </script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
-<script>window.CYTECH_API="https://cytech-backend.onrender.com";</script>
+<script>window.CYTECH_API="https://cytechbackend.onrender.com";</script>
 <script src="cytech-patch.js"></script>
 </body>
 </html>
